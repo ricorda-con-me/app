@@ -19,6 +19,7 @@
   const img = (f, t = 48) => `<img class="f3d" src="../assets/img/${f}" width="${t}" height="${t}" alt="">`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
   const EXTRAS = CFG.extras; // {p:{...}, m:{...}, c:{...}, j:{...}}
+  const nomeP = () => EXTRAS.p.nome.charAt(0).toLowerCase() + EXTRAS.p.nome.slice(1); // o nome do plano no meio da frase
   const ORDEM = ["p", "m", "r", "c", "j"].filter((k) => EXTRAS[k]);
   /* venda dentro do app (Vini, 12/10/2026): os pacotes da LP viram UPGRADE PELA DIFERENCA para o Completo (34,90 EUR).
      Quem so tem o kit paga +19,90 (ou +9,90 pelo Dia a Dia = Plano + Jogos); quem ja tem algum complemento paga +9,90.
@@ -297,7 +298,7 @@
       <div class="dt-pontos up">${linhas}</div>
       <div class="dt-preco"><b>${u.preco}</b></div><p class="dt-depois">Il Completo costa 34,90 €. Visto che hai già ${u.ja}, paghi solo la differenza.</p>
       <a class="botao grande" href="${u.ck}">Voglio il Completo</a>
-      ${soDiaDia() ? `<a class="dt-mais" href="${UP.d9}">Oppure solo il Piano di 90 giorni e i Giochi: +9,90 €</a>` : ""}</div>`;
+      ${soDiaDia() ? `<a class="dt-mais" href="${UP.d9}">Oppure solo il ${esc(EXTRAS.p.nome)} e i Giochi: +9,90 €</a>` : ""}</div>`;
   }
 
   /* a cada 3 atividades do kit feitas, a festa mostra UMA linha discreta com a amostra de um complemento que falta */
@@ -324,7 +325,7 @@
     };
     const lista = [...ORDEM, ...(BCOMP.length && !tem.has("b") ? ["b"] : [])];
     const bonusC = tem.has("b") ? `<p class="secao">Bonus del Completo</p><div class="bonus">${BCOMP.map((b) => `<a class="pdf" href="../assets/pdf/${b.ficheiro}" download>${img(b.icone, 40)}${esc(b.nome)}</a>`).join("")}</div>` : "";
-    const hoje = tem.has("p") ? `<a class="hoje" href="#/plano">${img("calendar.png", 56)}<div><b>L'attività di oggi</b><small>Piano di 90 giorni: riprendi da dove avevi lasciato</small></div></a>` : "";
+    const hoje = tem.has("p") ? `<a class="hoje" href="#/plano">${img("calendar.png", 56)}<div><b>L'attività di oggi</b><small>${esc(EXTRAS.p.nome)}: riprendi da dove avevi lasciato</small></div></a>` : "";
     const bonus = CFG.bonus.map((b) => `<a class="pdf" href="../assets/pdf/${b.ficheiro}" download>${img(b.icone, 40)}${esc(b.nome)}</a>`).join("");
     app.innerHTML = `
       <div class="ola"><div class="avos">${img("old_woman.png", 92)}${img("old_man.png", 92)}</div><h1>${esc(CFG.marca)}</h1><p>Attività per tenere la mente attiva. Da fare sullo schermo o da stampare.</p></div>
@@ -358,11 +359,11 @@
       if (voltar && voltar.startsWith("#/plano")) festa("Benissimo!", "Un'altra attività fatta.", voltar);
       else festa("Benissimo!", seguinte ? "Attività completata. La prossima ti aspetta." : "Hai finito l'ultimo livello di questo quaderno!", seguinte ? `#/a/${id}/${seguinte.n}` : "#/c/" + id, ofertaFesta());
     });
-    $(".festa .f-voltar").textContent = voltar && voltar.startsWith("#/plano") ? "Torna al piano" : seguinte ? "Attività successiva" : "Torna al quaderno";
+    $(".festa .f-voltar").textContent = voltar && voltar.startsWith("#/plano") ? "Torna al calendario" : seguinte ? "Attività successiva" : "Torna al quaderno";
     ligaImprimir(a.papel);
   }
 
-  /* ------------------------------ Plano de 90 Dias (amostra: dias 1 a 3) */
+  /* ------------------------------ Plano do ano (19/10/2026: era de 90 dias; 12 meses, 1 atividade por dia; amostra: dias 1 a 3) */
   async function plano(dia) {
     const dono = tem.has("p");
     if (!dono && dia && !livre.p(dia)) return oferta("p");
@@ -372,18 +373,25 @@
     if (!dia) {
       const hoje = P.dias.find((d) => !feitoDia(d)) || P.dias[P.dias.length - 1];
       const hojeLivre = dono || livre.p(hoje.dia);
+      const porMes = {}, DM = P.dias_mes || 30;
+      P.dias.forEach((d) => { const m = d.mes || Math.ceil(d.dia / DM); if (!porMes[m]) porMes[m] = []; porMes[m].push(d); });
+      const mesHoje = hoje.mes || Math.ceil(hoje.dia / DM);
       const dia1 = (d) => (dono || livre.p(d.dia)
         ? `<a class="dia ${feitoDia(d) ? "feito" : ""} ${d.dia === hoje.dia ? "hj" : ""}" href="#/plano/${d.dia}">${d.dia}</a>`
         : `<a class="dia tr" href="#/oferta/p" aria-label="Giorno ${d.dia}, nel pacchetto Completo">🔒</a>`);
+      const meses = Object.keys(porMes).map(Number).sort((a, b) => a - b).map((m) => {
+        const ds = porMes[m], fatti = ds.filter(feitoDia).length;
+        return `<details class="mes" ${m === mesHoje ? "open" : ""}><summary><b>Mese ${m}</b><small>Livello ${ds[0].nivel} · ${fatti}/${ds.length}</small></summary><div class="dias">${ds.map(dia1).join("")}</div></details>`;
+      }).join("");
       app.innerHTML = `${topo("#/", "‹ Inizio")}${faixa(img(x.icone, 44), x.nome)}${dono ? "" : amostra("p")}
-        ${dono ? pdfTopo(x.pdf, "Scarica il piano in PDF") : ""}<a class="hoje grande" href="${hojeLivre ? "#/plano/" + hoje.dia : "#/oferta/p"}">${img("calendar.png", 64)}<div><b>Giorno ${hoje.dia}</b><small>${hojeLivre ? "L'attività di oggi è pronta" : "I giorni successivi sono nel pacchetto Completo"}</small></div></a>
-        <p class="secao">I 90 giorni</p><div class="dias">${P.dias.map(dia1).join("")}</div>`;
+        ${dono ? pdfTopo(x.pdf, "Scarica il calendario in PDF") : ""}<a class="hoje grande" href="${hojeLivre ? "#/plano/" + hoje.dia : "#/oferta/p"}">${img("calendar.png", 64)}<div><b>Giorno ${hoje.dia}</b><small>${hojeLivre ? "L'attività di oggi è pronta" : "I giorni successivi sono nel pacchetto Completo"}</small></div></a>
+        <p class="secao">I 12 mesi</p>${meses}`;
       return;
     }
     const d = P.dias.find((z) => z.dia === +dia);
     const nomes = Object.fromEntries(CFG.cadernos.map((c) => [c.id, c]));
-    const seg = +dia < 90 ? (dono || livre.p(+dia + 1) ? `<a class="botao claro" href="#/plano/${+dia + 1}">Vedi il giorno ${+dia + 1} ›</a>` : `<a class="botao claro" href="#/oferta/p">Il giorno ${+dia + 1} e i successivi sono nel Completo ›</a>`) : "";
-    app.innerHTML = `${topo("#/plano", "‹ Piano")}${faixa(img(x.icone, 44), "Giorno " + d.dia + " di 90")}${dono ? "" : amostra("p")}
+    const seg = +dia < P.dias.length ? (dono || livre.p(+dia + 1) ? `<a class="botao claro" href="#/plano/${+dia + 1}">Vedi il giorno ${+dia + 1} ›</a>` : `<a class="botao claro" href="#/oferta/p">Il giorno ${+dia + 1} e i successivi sono nel Completo ›</a>`) : "";
+    app.innerHTML = `${topo("#/plano", "‹ Calendario")}${faixa(img(x.icone, 44), "Giorno " + d.dia + " di " + P.dias.length)}${dono ? "" : amostra("p")}
       <p class="dica">${esc(d.nota)}</p>
       <div class="ativs">${d.atividades.map((a) => `<a class="ativ ${feitas[a.id] ? "feita" : ""}" href="#/pa/${d.dia}/${a.cad}/${a.n}">${img(nomes[a.cad].icone, 44)}<b>${esc(a.titulo)}<small>${esc(nomes[a.cad].nome)}</small></b><span class="ck">${feitas[a.id] ? "✓" : ""}</span></a>`).join("")}</div>
       ${feitoDia(d) ? `<p class="parabens">${img("trophy.png", 60)}Giorno ${d.dia} completato!</p>` : ""}
@@ -481,7 +489,7 @@
     const x = X(k); const u = upgrade();
     if (!x || !u) return hub();
     cor(x.cor, x.cor2);
-    const diaDia = soDiaDia() && (k === "p" || k === "j") ? `<a class="dt-mais" href="${UP.d9}">Oppure solo il Piano di 90 giorni e i Giochi: +9,90 €</a>` : "";
+    const diaDia = soDiaDia() && (k === "p" || k === "j") ? `<a class="dt-mais" href="${UP.d9}">Oppure solo il ${esc(EXTRAS.p.nome)} e i Giochi: +9,90 €</a>` : "";
     app.innerHTML = `${topo("#/", "‹ Inizio")}
       <div class="of-topo">${img(x.icone, 110)}<span class="selo">NEL PACCHETTO COMPLETO</span><h1>${esc(x.nome)}</h1><p>${esc(x.dor || x.promessa)}</p></div>
       <div class="of-lista">${x.pontos.map((p) => `<div class="of-p">${img(p[0], 46)}<div><b>${esc(p[1])}</b><p>${esc(p[2])}</p></div></div>`).join("")}</div>
