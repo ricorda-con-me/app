@@ -9,6 +9,8 @@
   const ler = (k, v) => { try { const x = localStorage.getItem(k); return x ? JSON.parse(x) : v; } catch (e) { return v; } };
   const gravar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const tem = new Set([...(ler("rc-acesso", [])), ...CFG.acesso.split("")]);
+  /* 20/10/2026 (reformulacao, Vini): o kit passa a trazer o Calendario das 365 sessoes, o Corpo attivo e os Giochi */
+  if (tem.has("f")) ["p", "c", "j"].forEach((k) => tem.add(k));
   gravar("rc-acesso", [...tem]);
   const feitas = ler("rc-feitas", {});
   const marcar = (id) => { feitas[id] = Date.now(); gravar("rc-feitas", feitas); };
@@ -284,7 +286,16 @@
   const imprimir = (texto = "Stampa o salva in PDF") => `<div class="imprimir"><button class="botao claro bt-imp">🖨️  ${texto}</button><p>Esce la scheda pronta da stampare, in formato A4.</p></div>`;
   const barraPdf = (pdfAtiv, pdfTodo, rotTodo) => `<div class="baixar"><a class="b-pdf" href="../assets/pdf/${pdfAtiv}" download>${img("page_facing_up.png", 34)}<span>Scarica questa attività in PDF</span></a><div class="b-sec"><button class="bt-imp">🖨️ Stampa</button>${pdfTodo ? `<a href="../assets/pdf/${pdfTodo}" download>${rotTodo}</a>` : ""}</div></div>`;
   const pdfTopo = (f, rot) => `<a class="pdf-destaque" href="../assets/pdf/${f}" download>${img("page_facing_up.png", 38)}<span>${rot}</span></a>`;
-  const ligaImprimir = (html) => { document.querySelectorAll(".bt-imp").forEach((b) => b.onclick = () => { $("#papel").innerHTML = html.split("{{IMG}}").join("../assets/img/"); setTimeout(() => window.print(), 300); }); };
+  const ligaImprimir = (html, depois) => { document.querySelectorAll(".bt-imp").forEach((b) => b.onclick = () => { $("#papel").innerHTML = html.split("{{IMG}}").join("../assets/img/"); if (depois) depois(); setTimeout(() => window.print(), 300); }); };
+  /* a folha do riscaldamento da sessao, montada aqui a partir da routine do Corpo attivo */
+  const folhaRotina = (r) => `<section class="page" style="padding:18mm 16mm;font-family:Nunito,Arial,sans-serif"><h1 style="font-family:Fredoka,Arial;font-size:26pt;margin:0 0 4mm">Riscaldamento: ${esc(r.nome)}</h1><p style="font-size:13pt;margin:0 0 6mm">${esc(r.descricao)} Da seduti, su una sedia stabile.</p>${r.passos.map((p, k) => `<div style="border:2px solid #ddd;border-radius:10px;padding:4mm 5mm;margin:0 0 4mm;break-inside:avoid"><h3 style="margin:0 0 2mm;font-size:15pt">${k + 1}. ${esc(p.nome)} <small style="font-weight:400">(${esc(p.dose)})</small></h3><ol style="margin:0;font-size:12.5pt">${p.passos.map((s) => `<li>${esc(s)}</li>`).join("")}</ol><p style="margin:2mm 0 0;font-size:11pt;color:#555">${esc(p.cuidado)}</p></div>`).join("")}</section>`;
+  async function sessaoHtml(d) {
+    const C = await dados("corpo");
+    const fichas = [];
+    for (const a of d.atividades) fichas.push((await dados(a.cad)).find((x) => x.n === a.n).papel);
+    return folhaRotina(C.rotinas[d.riscaldamento ? d.riscaldamento.i : 0]) + fichas.join("");
+  }
+  const diaDeHoje = async () => { const P = await dados("plano"); const feito = (d) => d.atividades.every((a) => feitas[a.id]); return P.dias.find((d) => !feito(d)) || P.dias[P.dias.length - 1]; };
 
   /* o upgrade para o Completo e a oferta principal do app (Vini, 08/10 e 12/10/2026): cartao no inicio, cada
      complemento que falta com a DOR na primeira linha e o "Experimentar" que abre a amostra gratis */
@@ -316,26 +327,36 @@
     let cards = "";
     for (const c of cads) {
       const n = Object.keys(feitas).filter((k) => k.startsWith(c.id + "-")).length;
-      cards += `<a class="card" href="#/c/${c.id}" style="--c:${c.cor}">${img(c.icone, 54)}<b>${esc(c.nome)}</b><span>${n ? n + " di " + c.total + " fatte" : c.total + " attività"}</span></a>`;
+      cards += `<a class="card" href="#/c/${c.id}" style="--c:${c.cor}">${img(c.icone, 54)}<b>${esc(c.nome)}</b><span>${n ? n + " di " + c.total + " fatte" : c.total + " schede"}</span></a>`;
     }
     const extra = (k) => {
       const x = X(k);
       if (tem.has(k)) return `<a class="tranc livre" href="#/${x.rota}" style="--c:${x.cor}">${img(x.icone, 50)}<div><b>${esc(x.nome)}</b><small>${esc(x.descricao)}</small></div><span class="cadeado">›</span></a>`;
       return `<a class="tranc" href="#/oferta/${k}">${img(x.icone, 50)}<div><b>${esc(x.nome)}</b><small>${esc(x.descricao)}</small></div><span class="exp">${k === "b" ? "Vedi" : "Prova"}</span></a>`;
     };
-    const lista = [...ORDEM, ...(BCOMP.length && !tem.has("b") ? ["b"] : [])];
+    /* 20/10/2026 (reformulacao, Vini): o app e a plataforma para IMPRIMIR. No topo, a sessao de hoje com o botao de
+       imprimir; depois escolher e imprimir por quaderno; o jogo no ecra fica em segundo plano */
+    const doKit = ORDEM.filter((k) => tem.has(k)), fora = [...ORDEM.filter((k) => !tem.has(k)), ...(BCOMP.length && !tem.has("b") ? ["b"] : [])];
     const bonusC = tem.has("b") ? `<p class="secao">Bonus del Completo</p><div class="bonus">${BCOMP.map((b) => `<a class="pdf" href="../assets/pdf/${b.ficheiro}" download>${img(b.icone, 40)}${esc(b.nome)}</a>`).join("")}</div>` : "";
-    const hoje = tem.has("p") ? `<a class="hoje" href="#/plano">${img("calendar.png", 56)}<div><b>L'attività di oggi</b><small>${esc(EXTRAS.p.nome)}: riprendi da dove avevi lasciato</small></div></a>` : "";
+    let sessao = "", hojeD = null;
+    if (tem.has("p")) {
+      hojeD = await diaDeHoje();
+      sessao = `<div class="sessao"><div class="s-topo">${img("calendar.png", 60)}<div><b>La sessione di oggi</b><small>Giorno ${hojeD.dia} di 365 · riscaldamento, 2 schede e un gioco</small></div></div>
+        <button class="botao grande bt-imp">🖨️ Stampa la sessione di oggi</button><a class="botao claro" href="#/plano/${hojeD.dia}">Vedi la sessione</a></div>`;
+    }
     const bonus = CFG.bonus.map((b) => `<a class="pdf" href="../assets/pdf/${b.ficheiro}" download>${img(b.icone, 40)}${esc(b.nome)}</a>`).join("");
     app.innerHTML = `
-      <div class="ola"><div class="avos">${img("old_woman.png", 92)}${img("old_man.png", 92)}</div><h1>${esc(CFG.marca)}</h1><p>Attività per tenere la mente attiva. Da fare sullo schermo o da stampare.</p></div>
-      ${destaque()}
-      <a class="pdf-destaque" href="#/pdfs">${img("page_facing_up.png", 38)}<span>Preferisci la carta? Scarica tutto in PDF</span></a>
-      ${hoje}
-      <p class="secao">Gli 8 quaderni</p><div class="cadernos">${cards}</div>
-      <p class="secao">Per andare oltre</p><div class="extras">${lista.map(extra).join("")}</div>
-      ${bonusC}<p class="secao">Bonus da scaricare</p><div class="bonus">${bonus}</div>
+      <div class="ola"><div class="avos">${img("old_woman.png", 92)}${img("old_man.png", 92)}</div><h1>${esc(CFG.marca)}</h1><p>Le tue attività pronte da stampare. Scegli, stampa e si comincia.</p></div>
+      ${sessao}
+      <p class="secao">Scegli e stampa</p><div class="cadernos">${cards}</div>
+      <a class="pdf-destaque" href="#/pdfs">${img("page_facing_up.png", 38)}<span>Scarica tutto in PDF</span></a>
+      ${doKit.length ? `<p class="secao">Nel tuo kit</p><div class="extras">${doKit.map(extra).join("")}</div>` : ""}
+      <p class="secao">Bonus da scaricare</p><div class="bonus">${bonus}</div>${bonusC}
+      ${"" /* 20/10/2026: o cartao do upgrade (destaque) saiu do inicio ate o upsell novo ser decidido; ficam os itens em Per andare oltre */}
+      ${fora.length ? `<p class="secao">Per andare oltre</p><div class="extras">${fora.map(extra).join("")}</div>` : ""}
+      <p class="dica tela">📱 Ogni scheda si può fare anche sullo schermo del cellulare o del tablet: apri un quaderno, scegli la scheda e tocca «Falla sullo schermo».</p>
       <p class="rodape">Queste attività sono un passatempo per allenare la mente. Non sostituiscono il parere del medico.</p>`;
+    if (hojeD) { const html = await sessaoHtml(hojeD); ligaImprimir(html, () => hojeD.atividades.forEach((a) => marcar(a.id))); }
   }
 
   async function caderno(id) {
@@ -350,17 +371,31 @@
 
   async function atividade(id, n, voltar) {
     const c = CFG.cadernos.find((x) => x.id === id); cor(c.cor, c.cor2);
-    const a = (await dados(id)).find((x) => x.n === +n);
-    const seguinte = (await dados(id)).find((x) => x.n === +n + 1);
+    const todasC = await dados(id);
+    const a = todasC.find((x) => x.n === +n);
+    const seguinte = todasC.find((x) => x.n === +n + 1);
+    /* 20/10/2026: o grupo misto. O mesmo tipo de scheda (mesmo titulo) existe nos 3 livelli; aqui se acha a versao do
+       nivel ao lado, na mesma posicao relativa, para imprimir para quem vai mais rapido ou mais devagar */
+    const irma = (nv) => { const mesmo = todasC.filter((x) => x.titulo === a.titulo), deste = mesmo.filter((x) => x.nivel === a.nivel), la = mesmo.filter((x) => x.nivel === nv); return la.length ? la[Math.min(deste.indexOf(a), la.length - 1)] : null; };
+    const facil = irma(a.nivel - 1), dificil = irma(a.nivel + 1), base = voltar ? voltar.replace("#/plano/", "#/pa/") + "/" + id + "/" : "#/a/" + id + "/";
+    const niveis = facil || dificil ? `<p class="secao">Per chi va più piano o più veloce</p><div class="duas-b">${facil ? `<a class="botao claro" href="${base}${facil.n}">‹ Livello ${facil.nivel}</a>` : ""}${dificil ? `<a class="botao claro" href="${base}${dificil.n}">Livello ${dificil.nivel} ›</a>` : ""}</div>` : "";
+    /* 20/10/2026: imprimir vem primeiro; fazer no ecra e a segunda opcao (e nem toda scheda tem versao de ecra) */
     app.innerHTML = `${topo(voltar || "#/c/" + id)}${faixa(img(c.icone, 40), c.nome)}
-      <h1 class="titulo">${esc(a.titulo)}</h1>${barraPdf(a.pdf, id + ".pdf", "Quaderno intero in PDF")}<p class="dica">${a.instr_app}</p><div class="motor"></div>${imprimir()}`;
-    M[a.app.motor]($(".motor"), a.app, () => {
+      <h1 class="titulo">${esc(a.titulo)}</h1><p class="dica">${a.instr}</p>
+      <button class="botao grande bt-imp">🖨️ Stampa questa scheda</button>
+      <a class="pdf-destaque" href="../assets/pdf/${a.pdf}" download>${img("page_facing_up.png", 34)}<span>Scarica la scheda in PDF, con le soluzioni</span></a>
+      ${niveis}
+      <a class="pdf-destaque" href="../assets/pdf/${id}.pdf" download>${img("open_book.png", 34)}<span>Scarica il quaderno intero in PDF</span></a>
+      ${voltar ? `<a class="botao claro" href="${voltar}">Torna alla sessione</a>` : seguinte ? `<a class="botao claro" href="#/a/${id}/${seguinte.n}">Scheda successiva ›</a>` : ""}
+      ${a.app ? `<button class="botao claro bt-tela">📱 Falla sullo schermo</button><div class="tela-j" hidden><p class="dica">${a.instr_app}</p><div class="motor"></div></div>` : ""}`;
+    const fim = () => {
       marcar(a.id);
       if (voltar && voltar.startsWith("#/plano")) festa("Benissimo!", "Un'altra attività fatta.", voltar);
       else festa("Benissimo!", seguinte ? "Attività completata. La prossima ti aspetta." : "Hai finito l'ultimo livello di questo quaderno!", seguinte ? `#/a/${id}/${seguinte.n}` : "#/c/" + id, ofertaFesta());
-    });
+    };
+    if (a.app) $(".bt-tela").onclick = (e) => { e.target.remove(); $(".tela-j").hidden = false; M[a.app.motor]($(".motor"), a.app, fim); };
     $(".festa .f-voltar").textContent = voltar && voltar.startsWith("#/plano") ? "Torna al calendario" : seguinte ? "Attività successiva" : "Torna al quaderno";
-    ligaImprimir(a.papel);
+    ligaImprimir(a.papel, () => marcar(a.id));
   }
 
   /* ------------------------------ Plano do ano (19/10/2026: era de 90 dias; 12 meses, 1 atividade por dia; amostra: dias 1 a 3) */
@@ -373,7 +408,7 @@
     if (!dia) {
       const hoje = P.dias.find((d) => !feitoDia(d)) || P.dias[P.dias.length - 1];
       const hojeLivre = dono || livre.p(hoje.dia);
-      const porMes = {}, DM = P.dias_mes || 30;
+      const porMes = {}, DM = 30;
       P.dias.forEach((d) => { const m = d.mes || Math.ceil(d.dia / DM); if (!porMes[m]) porMes[m] = []; porMes[m].push(d); });
       const mesHoje = hoje.mes || Math.ceil(hoje.dia / DM);
       const dia1 = (d) => (dono || livre.p(d.dia)
@@ -391,11 +426,19 @@
     const d = P.dias.find((z) => z.dia === +dia);
     const nomes = Object.fromEntries(CFG.cadernos.map((c) => [c.id, c]));
     const seg = +dia < P.dias.length ? (dono || livre.p(+dia + 1) ? `<a class="botao claro" href="#/plano/${+dia + 1}">Vedi il giorno ${+dia + 1} ›</a>` : `<a class="botao claro" href="#/oferta/p">Il giorno ${+dia + 1} e i successivi sono nel Completo ›</a>`) : "";
-    app.innerHTML = `${topo("#/plano", "‹ Calendario")}${faixa(img(x.icone, 44), "Giorno " + d.dia + " di " + P.dias.length)}${dono ? "" : amostra("p")}
+    /* 20/10/2026: a sessao do dia (riscaldamento + 2 schede + 1 gioco), com um botao que imprime tudo de uma vez */
+    const rz = d.riscaldamento, gz = d.gioco;
+    app.innerHTML = `${topo("#/plano", "‹ Calendario")}${faixa(img(x.icone, 44), "Sessione del giorno " + d.dia)}${dono ? "" : amostra("p")}
       <p class="dica">${esc(d.nota)}</p>
+      <button class="botao grande bt-imp">🖨️ Stampa la sessione</button><p class="sub-imp">Escono il riscaldamento e le due schede, in A4.</p>
+      <p class="secao">1. Riscaldamento, da seduti</p>
+      <div class="ativs">${rz ? `<a class="ativ" href="#/corpo/${rz.i}">${img("alarm_clock.png", 44)}<b>${esc(rz.nome)}<small>Circa 10 minuti, con il cronometro</small></b><span class="ck">›</span></a>` : ""}</div>
+      <p class="secao">2. Le due schede</p>
       <div class="ativs">${d.atividades.map((a) => `<a class="ativ ${feitas[a.id] ? "feita" : ""}" href="#/pa/${d.dia}/${a.cad}/${a.n}">${img(nomes[a.cad].icone, 44)}<b>${esc(a.titulo)}<small>${esc(nomes[a.cad].nome)}</small></b><span class="ck">${feitas[a.id] ? "✓" : ""}</span></a>`).join("")}</div>
+      ${gz ? `<p class="secao">3. Il gioco, insieme</p><div class="ativs"><a class="ativ" href="#/jogos/${gz.i}">${img("game_die.png", 44)}<b>${esc(gz.nome)}<small>Da stampare una volta e rifare quando si vuole</small></b><span class="ck">›</span></a></div>` : ""}
       ${feitoDia(d) ? `<p class="parabens">${img("trophy.png", 60)}Giorno ${d.dia} completato!</p>` : ""}
       ${seg}`;
+    ligaImprimir(await sessaoHtml(d), () => d.atividades.forEach((a) => marcar(a.id)));
   }
 
   /* ------------------------------ Memorie dell'epoca (m) e Fede e tradizioni (r): a mesma estrutura (amostra: 1.a domanda e 1.a conversazione) */

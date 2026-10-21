@@ -115,6 +115,88 @@ img.f3d { vertical-align: middle; }
 .grelha-ic { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; width: 160mm; }
 .mini { display: flex; align-items: center; gap: 10px; background: var(--c); border-radius: 16px; padding: 8px 12px; text-align: left; font-size: 13pt; border: 2px solid rgba(255,255,255,.5); }
 
+/* ---- tipi nuovi (20/10/2026): so classes novas, nenhuma regra acima foi mexida ---- */
+.centro { display: flex; justify-content: center; } .centro svg { display: block; }
+table.gmem { border-collapse: separate; border-spacing: 5px; margin: 0 auto; }
+table.gmem td { width: var(--cel); height: var(--cel); background: #fff; border: 2.5px solid var(--c2); border-radius: 12px; text-align: center; vertical-align: middle; padding: 0; }
+table.gmem td.on { border-color: var(--c); background: var(--c2); }
+table.gmem td small { display: block; font-weight: 800; color: var(--c); font-size: 10pt; line-height: 1; }
+.dove2 { display: flex; gap: 12mm; align-items: center; justify-content: center; } .dove2 table.gmem { margin: 0; }
+.dove-ogg { display: grid; grid-template-columns: auto auto; gap: 8px 18px; }
+.dove-ogg span, .seqimg span { display: flex; align-items: center; gap: 6px; }
+.dove-ogg b, .seqimg b { font-family: "Fredoka"; font-size: 19pt; font-weight: 600; color: var(--c); }
+.seqimg { display: grid; gap: 10px; justify-content: center; }
+.seqimg span { background: #fff; border-radius: 16px; padding: 6px 10px 8px; box-shadow: 0 2px 0 #e8ecee; flex-direction: column; gap: 4px; }
+.casella { display: block; width: 13mm; height: 11mm; border: 2.5px solid #9aa7ae; border-radius: 8px; background: #fff; flex: none; }
+.racconto { background: #fff; border-left: 8px solid var(--c); border-radius: 14px; padding: 12px 18px; font-size: 18pt; line-height: 1.55; box-shadow: 0 2px 0 #e8ecee; }
+.frase-l { background: #fff; border-radius: 16px; padding: 10px 16px; margin-bottom: 12px; box-shadow: 0 2px 0 #e8ecee; }
+.frase-l p { margin: 0 0 6px; font-size: 20pt; font-weight: 800; letter-spacing: .07em; line-height: 1.35; }
+.frase-l .q { font-size: 17pt; display: flex; gap: 28px; } .frase-l .q b { color: var(--c); font-size: 20pt; }
+.hl { color: var(--c); text-decoration: underline; }
+table.numg { border-collapse: separate; border-spacing: 5px; margin: 0 auto 12px; }
+table.numg td { width: 21mm; height: 14mm; text-align: center; font-size: 21pt; font-weight: 800; background: #fff; border-radius: 10px; box-shadow: 0 1px 0 #e3e8eb; }
+table.numg td.on { background: var(--c); color: #fff; }
+.mini-num table.numg { border-spacing: 2px; margin: 0; } .mini-num table.numg td { width: 10mm; height: 7mm; font-size: 10pt; border-radius: 4px; }
+.linee { display: flex; justify-content: center; background: #fff; border-radius: 16px; padding: 8px; box-shadow: 0 2px 0 #e8ecee; }
+.linee-r { display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: center; margin-top: 12px; font-size: 16pt; font-weight: 700; }
+.linee-r > span { display: flex; align-items: center; gap: 8px; }
+.cats { display: grid; gap: 12px; } .cats.c3 { grid-template-columns: 1fr 1fr 1fr; } .cats.c4 { grid-template-columns: 1fr 1fr; }
+.catb { background: #fff; border-radius: 16px; padding: 8px 14px 4px; box-shadow: 0 2px 0 #e8ecee; }
+.catb p { margin: 0; font-family: "Fredoka"; font-weight: 600; color: var(--c); font-size: 18pt; }
+table.ncc { border-collapse: separate; border-spacing: 4px; width: 100%; }
+table.ncc th { font-family: "Fredoka"; font-weight: 600; background: var(--c); color: #fff; border-radius: 10px; padding: 6px; font-size: 15pt; }
+table.ncc th.l { font-size: 26pt; width: 20mm; } table.ncc td { background: #fff; border: 2.5px solid var(--c2); border-radius: 10px; height: 25mm; }
+table.ncc.nr th { font-size: 11pt; padding: 2px; } table.ncc.nr th.l { font-size: 13pt; width: 10mm; } table.ncc.nr td { height: auto; padding: 2px 6px; font-size: 12pt; }
+.unire { display: flex; justify-content: space-between; padding: 0 12mm; }
+.unire > div { display: flex; flex-direction: column; gap: 10px; }
+.ucel, .sil { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 4px 12px; box-shadow: 0 2px 0 #e8ecee; }
+.ucel b { font-family: "Fredoka"; font-size: 18pt; color: var(--c); }
+.pt { width: 13px; height: 13px; border-radius: 50%; background: #26323a; display: inline-block; flex: none; }
+.unire.sill > div { gap: 14px; } .sil span { font-size: 24pt; font-weight: 800; letter-spacing: .08em; min-width: 22mm; text-align: center; }
+.cx.silm { padding: 10px 12px 4px; } .silm .sb { display: flex; justify-content: center; gap: 8px; }
+.silm .sb b { background: var(--c2); color: #26323a; border-radius: 10px; padding: 2px 10px; font-size: 19pt; letter-spacing: .04em; }
+.contrs { gap: 16px 26px; } .contr { font-size: 19pt; } .contr b { color: #26323a; } .contr .opc { display: flex; margin-top: 6px; }
+.serie { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 16px; padding: 8px 12px; margin-bottom: 12px; box-shadow: 0 2px 0 #e8ecee; }
+.serie .sr { flex: 1; } .sops { display: flex; gap: 22px; margin-top: 4px; } .sops span { display: flex; align-items: center; gap: 4px; }
+.sops b { font-family: "Fredoka"; font-size: 18pt; color: var(--c); }
+.pirs { display: flex; flex-direction: column; gap: 12mm; margin-top: 4mm; }
+.pir { display: flex; flex-direction: column; align-items: center; gap: 4px; } .pir div { display: flex; gap: 4px; }
+.pir span { width: 26mm; height: 15mm; display: flex; align-items: center; justify-content: center; background: var(--c2); border: 2.5px solid var(--c); border-radius: 8px; font-size: 21pt; font-weight: 800; }
+.pirs.n3 .pir span { width: 32mm; height: 18mm; font-size: 24pt; } .pirs.n5 .pir span { width: 23mm; height: 14mm; font-size: 19pt; }
+.pir span.v { background: #fff; border-style: dashed; border-color: #9aa7ae; }
+.pir.pr { display: inline-flex; margin: 0 8mm 3mm 0; gap: 2px; } .pir.pr div { gap: 2px; } .pir.pr span { width: 10mm; height: 7mm; font-size: 10pt; border-width: 1.5px; border-radius: 4px; }
+.logica { background: #fff; border-radius: 16px; padding: 10px 16px; margin-bottom: 12px; box-shadow: 0 2px 0 #e8ecee; font-size: 16pt; }
+.logica .li { margin: 0 0 4px; font-weight: 700; } .logica ul { margin: 0 0 6px; padding-left: 1.2em; line-height: 1.45; } .logica li::marker { color: var(--c); }
+.logica .lq { margin: 0; font-weight: 800; } .lcorpo { display: flex; gap: 14px; align-items: flex-start; } .lcorpo ul { flex: 1; }
+table.lgrid { border-collapse: collapse; font-size: 11.5pt; } table.lgrid th { font-weight: 800; padding: 2px 4px; color: var(--c); width: 19mm; line-height: 1.15; }
+table.lgrid th.n { text-align: right; color: #26323a; font-size: 13pt; } table.lgrid td { border: 2px solid #b8c3c9; width: 19mm; height: 12mm; background: #fff; }
+.omb { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px; padding: 10px 14px; margin-bottom: 14px; box-shadow: 0 2px 0 #e8ecee; }
+.omb-m { background: var(--c2); border-radius: 14px; padding: 8px; display: flex; } .omb-o { display: flex; gap: 14px; flex: 1; justify-content: space-around; }
+.omb-o span { display: flex; flex-direction: column; align-items: center; } .omb-o b { font-family: "Fredoka"; font-size: 18pt; color: var(--c); }
+.mini-q svg { width: auto; height: 46mm; }
+.sov-ops { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; } .sov-ops span { background: #fff; border-radius: 12px; padding: 4px; box-shadow: 0 2px 0 #e8ecee; display: flex; }
+.dif2 { display: flex; gap: 8mm; justify-content: center; } .dif2 .rot { text-align: center; }
+table.cal td.vz { background: #fff; border: 2.5px dashed #9aa7ae; } table.cal td.ok { color: var(--c); }
+table.cal.cr { margin: 0 0 3mm; border-spacing: 2px; } table.cal.cr td { width: 9mm; height: 7mm; font-size: 11pt; border-radius: 4px; } table.cal.cr th { font-size: 9pt; padding: 2px; }
+.nota-cal { text-align: center; font-size: 16pt; font-weight: 700; margin: 0; }
+.ord { margin-bottom: 12px; } .ois { display: grid; gap: 7px 18px; } .ois.dois { grid-template-columns: 1fr 1fr; } .ois.um { grid-template-columns: 1fr; }
+.oi { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 4px 12px; box-shadow: 0 2px 0 #e8ecee; font-size: 16.5pt; line-height: 1.25; }
+.mapa-w { display: flex; gap: 8mm; align-items: center; justify-content: center; margin-bottom: 12px; } .mapa-w table.gmem { margin: 0; }
+.leg { display: flex; flex-direction: column; gap: 3px; font-size: 13.5pt; font-weight: 700; } .leg span { display: flex; align-items: center; gap: 6px; }
+.przs { display: flex; flex-direction: column; gap: 12px; } .prz { display: flex; align-items: center; gap: 18px; background: #fff; border-radius: 16px; padding: 10px 14px; box-shadow: 0 2px 0 #e8ecee; }
+.cart { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fffdf8; border: 3px solid var(--c); border-radius: 12px; padding: 6px 16px; font-size: 22pt; font-weight: 800; min-width: 34mm; white-space: nowrap; }
+.conv { background: #fff; border-radius: 16px; padding: 8px 16px; margin-bottom: 11px; box-shadow: 0 2px 0 #e8ecee; font-size: 17pt; }
+.cv-t { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-family: "Fredoka"; font-weight: 600; font-size: 20pt; }
+.cv-o { display: flex; gap: 10px; } .cv-o > span { flex: 1; } .cv-o > span { background: var(--c2); border-radius: 12px; padding: 4px 12px; } .cv-o > span > b:first-child { color: var(--c); font-family: "Fredoka"; margin-right: 6px; }
+.cv-q { margin: 8px 0 0; font-weight: 800; }
+ol.probl li { margin-bottom: 16px; font-size: 17pt; line-height: 1.4; } .rline { font-weight: 800; color: var(--c); margin-top: 4px; }
+.logica.l3 { font-size: 15pt; } .logica.l3 table.lgrid td { height: 11mm; }
+/* tipi antichi: "Coppie uguali" nao tinha CSS nenhum (as 16 imagens saiam numa coluna so e o nivel 3 passava da A4) */
+.ligar { display: flex; justify-content: space-between; padding: 0 16mm; } .ligar > div { display: flex; flex-direction: column; gap: 10px; }
+.parcel { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 14px; padding: 4px 12px; box-shadow: 0 2px 0 #e8ecee; }
+.ligar .dirc .parcel { flex-direction: row-reverse; }
+table.coord.c6 td { width: 21mm; height: 18mm; }
+
 .resp-flow { padding: 14mm 15mm; background: #fff; }
 .resp-flow h1 { font-family: Fredoka; font-size: 26pt; margin: 0 0 8mm; color: var(--c); }
 .rb { break-inside: avoid; border-bottom: 1.5px dotted #d6dde1; padding: 3mm 0; font-size: 12pt; }
